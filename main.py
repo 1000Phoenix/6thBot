@@ -7,8 +7,11 @@ import asyncio
 import os.path
 from util.timeformatter import highest_denom
 
-intents = discord.Intents.all()
+intents = discord.Intents.default()
 intents.members = True
+intents.messages = True
+intents.typing = False
+intents.presences = False
 
 extensions = ["apis", "quiz", "ccolour", "collage", "fun", "kowalski", "helper"]
 
