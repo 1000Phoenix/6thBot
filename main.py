@@ -63,7 +63,10 @@ class Core(commands.Bot):  # discord.ext.commands.Bot is a subclass of discord.C
     async def on_message(self, msg: discord.Message):
         if msg.author.bot:
             return
-        if not isinstance(msg.channel, discord.TextChannel):
+        from discord import TextChannel, DMChannel, Thread
+        if not isinstance(msg.channel, (TextChannel, DMChannel, Thread)):
+            return
+        if isinstance(msg.channel, (DMChannel, Thread)):
             await msg.channel.send("Sorry, commands don't work in DMs. Try talking to me on a server instead!")
             return
         if msg.guild.me.name.lower() in msg.content.lower() or msg.guild.me in msg.mentions:
@@ -125,7 +128,7 @@ class Core(commands.Bot):  # discord.ext.commands.Bot is a subclass of discord.C
 bot = Core(
     description="A Bot Designed for the r/6thForm Discord.",
     activity=discord.Game("with you!"),  # "playing" is prefixed at the start of the status
-    command_prefix="6."
+    command_prefix="6.",
     intents=intents
 )
 bot.remove_command('help')
