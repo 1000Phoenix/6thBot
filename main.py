@@ -1,4 +1,5 @@
 # The main module. This adds all the other files as cogs, so this should be the code entry point.
+print("[main.py] Script started")
 import discord
 from discord.ext import commands, tasks
 from datetime import datetime
@@ -58,7 +59,10 @@ class Core(commands.Bot):  # discord.ext.commands.Bot is a subclass of discord.C
         total = len(extensions)
         for num, name in enumerate(extensions):
             print(f"[{num+1}/{total}] {name}")
-            self.load_extension(f"cogs.{name}")
+            try:
+                self.load_extension(f"cogs.{name}")
+            except Exception as e:
+                print(f"[main.py] Failed to load cog {name}: {e}")
 
     async def on_message(self, msg: discord.Message):
         if msg.author.bot:
