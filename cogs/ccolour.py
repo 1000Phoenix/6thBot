@@ -86,6 +86,27 @@ class CustomColours(commands.Cog):
 
         self.save_colour_store.start()
         self.cleanup_roles.start()
+        self.bot.loop.create_task(self.remove_invalid_booster_colours_when_ready())
+
+    async def remove_invalid_booster_colours_when_ready(self):
+        await self.bot.wait_until_ready()
+        await self.remove_invalid_booster_colours()
+
+    async def remove_invalid_booster_colours(self):
+        print("[Startup Check] Removing custom colour roles from users who are no longer boosting...")
+        removed_roles = set()
+        for colour_obj in list(self.colour_store):
+            from_member = colour_obj.from_member
+            if from_member and from_member.premium_since is None:
+                removed_roles.add(colour_obj.role)
+                await colour_obj.to_member.remove_roles(colour_obj.role)
+                self.colour_store.remove(colour_obj)
+                print(f"Removed custom colour role from {colour_obj.to_member} (no longer boosted by {from_member})")
+        for role in removed_roles:
+            if len(role.members) == 0:
+                print(f"Deleted role {role} (no members left)")
+                await role.delete()
+        print("[Startup Check] Done.")
 
     async def fetch_colour_store(self):
         await self.bot.wait_until_ready()
@@ -230,6 +251,20 @@ class CustomColours(commands.Cog):
             for role in removed_roles:
                 if len(role.members) == 0:
                     print("Removed completely")
+                    await role.delete()
+
+        # Remove custom colour roles if user stops boosting
+        if before.premium_since and not after.premium_since:
+            print(f"{after} has stopped boosting. Removing custom colour roles.")
+            removed_roles = set()
+            for colour_obj in list(self.colour_store):
+                if colour_obj.from_member == after:
+                    removed_roles.add(colour_obj.role)
+                    await colour_obj.to_member.remove_roles(colour_obj.role)
+                    self.colour_store.remove(colour_obj)
+            for role in removed_roles:
+                if len(role.members) == 0:
+                    print("Removed completely (no longer boosting)")
                     await role.delete()
 
     @commands.Cog.listener()
